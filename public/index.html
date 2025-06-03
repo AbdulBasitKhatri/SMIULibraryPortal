@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome | SMIU Library Portal</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+    *{
+      font-family: 'Poppins', sans-serif;
+    }
+    html,body{
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    body{
+      overflow: hidden;
+      background: white;
+      background-image: url("/img/smbg.jpg");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      backdrop-filter: blur(3px);
+    }
+    .landing-container {
+      margin: 0px;
+      text-align: center;
+      padding: 20px;
+      width: 500px;
+      height: 200px;
+      top: calc(50% - 140px);
+      left: calc(50% - 270px);
+      position: fixed;
+      border-radius: 10px;
+      box-shadow: 0 0px 30px rgba(255, 255, 255, 0.3);
+      color: #111;
+      font-weight: bold;
+      background-color: rgba(23, 23, 23, 0.4);
+      backdrop-filter: blur(5px);
+    }
+    .landing-container h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+      z-index: 2;
+      color: rgb(255, 255, 255);
+    }
+    .landing-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .landing-buttons a {
+      padding: 12px 30px;
+      font-size: 18px;
+      color: white;
+      text-decoration: none;
+      background: linear-gradient(180deg, #5453539a, #ffffff1f);
+      border-radius: 8px;
+    }
+    .landing-buttons a:hover {
+      background: linear-gradient(180deg, #545353ba, #ffffff34);
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-container">
+    <h1>Welcome to SMIU library portal</h1>
+    <div class="landing-buttons">
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+    </div>
+  </div>
+</body>
+</html>

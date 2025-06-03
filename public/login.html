@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SMIU Library Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="title">Login</div>
+    <div class="content">
+      <form action="/login" method="post">
+        <div class="user-details">
+          <div class="input-box">
+            <span class="details">Student-ID</span>
+            <input type="text" placeholder="Enter your Student-ID" name="sid" required>
+          </div>
+          <div class="input-box">
+            <span class="details">Password</span>
+            <input type="password" placeholder="Enter your password" name="password" required>
+          </div>
+        </div>
+        <div class="button">
+          <input type="submit" value="Login">
+        </div>
+        <p>Don't have an account? <a href="/register">Register</a></p>
+      </form>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('error') === 'invalid') {
+      alert('Invalid credentials!');
+    }
+    else if (params.get('lo') === 'true') {
+      alert('Successfully logout!');
+    }
+    else if (params.get('error') === 'li') {
+      alert('Please login!');
+    }
+    else if (params.get('r') === 'true') {
+      alert('Registeration Successful!');
+    }
+  </script>
+</body>
+</html>

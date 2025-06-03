@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SMIU Library Portal</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <div class="header">
+    <div class="welcome" id="welcome">Welcome, Student!</div>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search for books..." onkeyup="searchBooks()">
+  </div>
+  
+  <div class="book-container" id="bookContainer">
+    <!-- Book cards will be inserted by JavaScript -->
+  </div>
+  
+  <script>
+    const bookContainer = document.getElementById("bookContainer");
+
+    function renderBooks(filteredBooks) {
+      bookContainer.innerHTML = "";
+      filteredBooks.forEach(book => {
+        bookContainer.innerHTML += `
+          <div class="book-card">
+            <img src="${book.image}" alt="Book Cover">
+            <h3>${book.title}</h3>
+            <p><strong>Author:</strong> ${book.author}</p>
+            <p><strong>ISBN:</strong> ${book.isbn}</p>
+            <div class="btn-group">
+              <button class="solid-btn">Borrow</button>
+              <button class="solid-btn">Return</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+let books = []; 
+    function searchBooks() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = books.filter(book =>
+        book.title.toLowerCase().includes(query) ||
+        book.author.toLowerCase().includes(query) ||
+        book.isbn.includes(query)
+      );
+      renderBooks(filtered);
+    }
+
+    function logout() {
+      window.location.href = "/logout";
+    }
+
+    fetch('/books', {
+    method: 'GET',
+    credentials: 'include'  // 🔐 important to send cookies!
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Unauthorized or error fetching books');
+    return res.json();
+  })
+  .then(data => {
+    data.map(book => books.push(book));
+    renderBooks(books);
+  })
+  .catch(err => {
+    document.getElementById('bookContainer').innerText = 'Failed to load books.';
+    console.error(err);
+  });
+  fetch('/me', {
+    method: 'GET',
+    credentials: 'include' // 🔐 sends the JWT cookie
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Not authenticated');
+    return response.json();
+  })
+  .then(data => {
+    console.log('User name:', data.name);
+    document.getElementById('welcome').textContent = `Welcome, ${data.name}!`;
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById('welcome').textContent = 'Welcome, Student!';
+  });
+  </script>
+</body>
+</html>

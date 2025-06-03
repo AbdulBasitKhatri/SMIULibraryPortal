@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  background: #f4f4f4;
+  padding: 20px;
+  background-image: url("/img/smbg.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  backdrop-filter: blur(6px);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  color: white;
+  padding: 10px;
+}
+
+.welcome {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.logout {
+  background-color: #ff6352;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.logout:hover {
+  background-color: #c0392b;
+}
+
+.search-bar {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+#searchInput {
+  width: 50%;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.book-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  overflow-y: scroll;
+}
+#bookContainer{
+  height: 50rem;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;
+}
+::-webkit-scrollbar {
+  display: none;
+}
+
+
+.book-card {
+  background: rgba(0,0,0,0.4);
+  width: 240px;
+  height: 360px;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  text-align: center;
+  transition: 0.2s ease-out;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+}
+
+.book-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.book-card h3 {
+  margin: 15px 0 10px;
+  font-size: 18px;
+  color: white;
+}
+
+.book-card p {
+  font-size: 14px;
+  color: #eee;
+}
+
+.btn-group {
+  margin-top: 10px;
+}
+
+.solid-btn {
+  background: linear-gradient(1deg, #6c6c6c9a, #0000001f);
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  margin: 3px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.solid-btn:hover {
+  background: linear-gradient(1deg, #8686869a, #5b5b5b70);
+}
