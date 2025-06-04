@@ -3,7 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const bodyParser = require('body-parser');
 const sqlite3 = require('sqlite3').verbose();
+const multer = require('multer');
 const path = require('path');
+const crypto = require('crypto');
 const cookieParser = require('cookie-parser');
 
 const app = express();
@@ -21,6 +23,19 @@ const db = new sqlite3.Database('./db/database.db', (err) => {
     if (err) return console.error(err.message);
     console.log('Connected to the SQLite database.');
 });
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/img');
+  },
+  filename: function (req, file, cb) {
+    const randomName = crypto.randomBytes(8).toString('hex');
+    const ext = path.extname(file.originalname);
+    cb(null, `${randomName}${ext}`);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 db.run(`CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,7 +102,6 @@ books.forEach(book => {
   );
 });
 
-// Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
 });
@@ -97,7 +111,7 @@ app.get('/register', (req, res) => {
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
-// Register
+
 app.post('/register', async (req, res) => {
     const { name, sid, email, phone, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -108,32 +122,44 @@ app.post('/register', async (req, res) => {
     });
 });
 
-// Login
 app.post('/login', (req, res) => {
     const { sid, password } = req.body;
+    // Hardcoded admin credentials
+    if (sid === 'admin' && password === '@dm1n') {
+        const token = jwt.sign({ role: 'admin' }, SECRET, { expiresIn: '1h' });
 
-    db.get('SELECT * FROM users WHERE sid = ?', [sid], async (err, user) => {
-        if (err || !user) return res.redirect('/login?error=invalid');
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.redirect('/login?error=invalid');
-
-        const token = jwt.sign({ sid: user.sid}, SECRET, { expiresIn: '1h' });
-
-        // Set cookie
-        res.cookie('token', token, {
+        res.cookie('admin_token', token, {
             httpOnly: true,
             secure: false,
             sameSite: 'strict',
             maxAge: 60 * 60 * 1000
         });
 
-        res.redirect('/dashboard');
-    });
+        return res.redirect('/admin');
+    }
+    else{
+      db.get('SELECT * FROM users WHERE sid = ?', [sid], async (err, user) => {
+          if (err || !user) return res.redirect('/login?error=invalid');
+
+          const isMatch = await bcrypt.compare(password, user.password);
+          if (!isMatch) return res.redirect('/login?error=invalid');
+
+          const token = jwt.sign({ sid: user.sid}, SECRET, { expiresIn: '1h' });
+
+          res.cookie('token', token, {
+              httpOnly: true,
+              secure: false,
+              sameSite: 'strict',
+              maxAge: 60 * 60 * 1000
+          });
+
+          res.redirect('/dashboard');
+      });
+    }
 });
 
 function requireAuth(req, res, next) {
-    const token = req.cookies.token;
+    const token = req.cookies.token || req.cookies.admin_token;
     if (!token) return res.redirect('/login?error=li');
 
     jwt.verify(token, SECRET, (err, user) => {
@@ -142,6 +168,21 @@ function requireAuth(req, res, next) {
         next();
     });
 }
+
+function requireAdmin(req, res, next) {
+    const token = req.cookies.admin_token;
+    if (!token) return res.redirect('/login?error=li');
+
+    jwt.verify(token, SECRET, (err, user) => {
+        if (err || user.role !== 'admin') return res.redirect('/login?error=li');
+        req.admin = user;
+        next();
+    });
+}
+
+app.get('/admin', requireAdmin, (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html');
+});
 
 app.get('/logout', (req, res) => {
     res.clearCookie('token');
@@ -155,7 +196,57 @@ app.get('/dashboard', requireAuth, (req, res) => {
 app.get('/books', requireAuth, (req, res) => {
   db.all('SELECT * FROM books', (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error' });
+    return res.json(rows);
+  });
+});
+
+app.delete('/books/:isbn', requireAdmin, (req, res) => {
+    const isbn = req.params.isbn;
+
+    db.run('DELETE FROM books WHERE isbn = ?', [isbn], function(err) {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (this.changes === 0) return res.status(404).json({ error: 'Book not found!' });
+
+        res.json({ message: 'Book removed successfully!' });
+    });
+});
+
+app.post('/addBook', requireAdmin, upload.single('picture'), (req, res) => {
+  const { title, author, isbn } = req.body;
+  const imageFile = req.file;
+
+  if (!imageFile) return res.status(400).send('Image upload failed');
+
+  const imagePath = `/img/${imageFile.filename}`;
+
+  db.run(
+    'INSERT INTO books (title, author, isbn, image) VALUES (?, ?, ?, ?)',
+    [title, author, isbn, imagePath],
+    function (err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Database error');
+      }
+      res.redirect('/admin');
+    }
+  );
+});
+
+app.get('/students', requireAdmin, (req, res) => {
+  db.all('SELECT name, sid, phone, email FROM users', (err, rows) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
     res.json(rows);
+  });
+});
+
+app.delete('/students/:sid', requireAdmin, (req, res) => {
+  const sid = req.params.sid;
+
+  db.run('DELETE FROM users WHERE sid = ?', [sid], function(err) {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    if (this.changes === 0) return res.status(404).json({ error: 'Student not found' });
+
+    res.json({ message: 'Student removed successfully' });
   });
 });
 

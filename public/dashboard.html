@@ -79,7 +79,6 @@ let books = [];
     return response.json();
   })
   .then(data => {
-    console.log('User name:', data.name);
     document.getElementById('welcome').textContent = `Welcome, ${data.name}!`;
   })
   .catch(err => {

@@ -19,6 +19,7 @@ body {
 
 .header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
@@ -32,6 +33,18 @@ body {
   font-size: 24px;
   font-weight: 600;
 }
+
+.headerButton {
+  background-color: rgba(0,0,0,0);
+  color: #fff;
+  border: none;
+  border-right: 1px solid;
+  padding: 10px 20px;
+  border-radius: 0px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.headerButton:first-child { border-left: 1px solid; }
 
 .logout {
   background-color: #ff6352;

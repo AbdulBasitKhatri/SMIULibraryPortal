@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SMIU Library Portal</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <style>
+    .input-box{
+        padding: 8px;
+        color: white;
+        text-align: center;
+        display: flex;
+        justify-content: space-between;
+    }
+    .input-box input{
+        padding: 8px;
+        border-radius: 4px;
+        border: none;
+    }
+    #addBookDialogue{
+        padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="welcome" id="welcome">Welcome, Admin!</div>
+    <div style="display: flex; gap: 20px;">
+        <div style="display: flex; gap: 0px;">
+            <button class="headerButton" onclick="toggleAbd()">Add Book</button>
+            <button class="headerButton" onclick="hideStudents()">Books</button>
+            <button class="headerButton" onclick="seeStudents()">Students</button>
+        </div>
+        <button class="logout" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div id="students" style="width: 100%; height: 50rem;">
+    
+  </div>
+  <div id="main">
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search for books..." onkeyup="searchBooks()">
+    </div>
+    <div class="book-container" id="bookContainer"></div>
+    <div id="blur" onclick="toggleAbd()" style="filter: blur(45px); backdrop-filter: blur(40px); width: 100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(255,255,255,0.5);"></div>
+    <div id="addBookDialogue" style="position: fixed; width: 300px; height: 320px; background-color: rgba(0, 0, 0, 0.7);border-radius: 8px; left: calc(50% - 150px); top: 10%;">
+        <h2 style="text-align: center; color: white;">Enter book details</h2>
+        <form action="/addBook" method="post" enctype='multipart/form-data'>
+            <div class="input-box">
+                <label for="title">Title</label>
+                <input type="text" placeholder="Enter Book's Title" name="title" id="title" required>
+            </div>
+            <div class="input-box">
+                <label for="author">Author</label>
+                <input type="text" placeholder="Enter Author's Name" name="author" id="author" required>
+            </div>
+            <div class="input-box">
+                <label for="isbn">ISBN</label>
+                <input type="text" placeholder="Enter ISBN" name="isbn" id="isbn" required>
+            </div>
+            <div class="input-box">
+                <label for="picture">Picture</label>
+                <input type="file" id="picture" name="picture" accept="image/*">
+            </div>
+            <div class="input-box">
+                <input type="submit" id="add" value="Add" style="width: 100%;">
+            </div>
+        </form>
+    </div>
+    </div>
+  <script>
+    const bookContainer = document.getElementById("bookContainer");
+    const abd = document.getElementById("addBookDialogue");
+    const blur = document.getElementById("blur");
+    const students = document.getElementById("students");
+    const main = document.getElementById("main");
+    let showAbd = false;
+    function addStudents() {
+        students.innerHTML = "";
+    fetch('/students', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        const students = document.getElementById('students');
+        students.innerHTML = ''; // clear old content
+
+        data.forEach(student => {
+          const div = document.createElement('div');
+          div.className = 'student';
+          div.style = 'background: rgba(0, 0, 0, 0.4); border-radius: 8px; padding: 20px 30px; color: white; margin-bottom: 10px;';
+
+          div.innerHTML = `
+            <p class="student-detail"><b>Name:</b>&nbsp;&nbsp; ${student.name}</p>
+            <p class="student-detail"><b>Student-ID:</b>&nbsp;&nbsp; ${student.sid}</p>
+            <p class="student-detail"><b>Phone:</b>&nbsp;&nbsp; ${student.phone}</p>
+            <p class="student-detail"><b>Email:</b>&nbsp;&nbsp; ${student.email}</p>
+            <button class="solid-btn" style="float: right; width: 40%;" onclick="removeStudent('${student.sid}')">Remove</button>
+            <br><br>
+          `;
+
+          students.appendChild(div);
+        });
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Failed to load students');
+      });
+    }
+    function removeStudent(sid) {
+        if (!confirm(`Are you sure you want to remove student with ID ${sid}?`)) return;
+
+        fetch(`/students/${sid}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Delete failed');
+            return res.json();
+        })
+        .then(data => {
+            alert(data.message);
+            addStudents(); // refresh list
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Could not delete student');
+        });
+    }
+
+    function renderBooks(filteredBooks) {
+      bookContainer.innerHTML = "";
+      filteredBooks.forEach(book => {
+        bookContainer.innerHTML += `
+          <div class="book-card">
+            <img src="${book.image}" alt="Book Cover">
+            <h3>${book.title}</h3>
+            <p><strong>Author:</strong> ${book.author}</p>
+            <p><strong>ISBN:</strong> ${book.isbn}</p>
+            <div class="btn-group">
+              <button class="solid-btn" onclick="removeBook('${book.isbn}')">Remove</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+let books = []; 
+    function searchBooks() {
+      const query = document.getElementById("searchInput").value.toLowerCase();
+      const filtered = books.filter(book =>
+        book.title.toLowerCase().includes(query) ||
+        book.author.toLowerCase().includes(query) ||
+        book.isbn.includes(query)
+      );
+      renderBooks(filtered);
+    }
+
+    function logout() {
+      window.location.href = "/logout";
+    }
+
+    fetch('/books', {
+    method: 'GET',
+    credentials: 'include'  // 🔐 important to send cookies!
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Unauthorized or error fetching books');
+    return res.json();
+  })
+  .then(data => {
+    data.map(book => books.push(book));
+    console.log(data)
+    renderBooks(books);
+  })
+  .catch(err => {
+    document.getElementById('bookContainer').innerText = 'Failed to load books.';
+    console.error(err);
+  });
+  function removeBook(isbn) {
+    if (!confirm(`Are you sure you want to delete the book with ISBN: ${isbn}?`)) return;
+
+    fetch(`/books/${isbn}`, {
+      method: 'DELETE',
+      credentials: 'include' // ensures admin cookie is sent
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to delete book');
+      return res.json();
+    })
+    .then(data => {
+      alert(data.message);
+      // Optionally refresh book list or remove the DOM element
+      location.reload();
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Error deleting book');
+    });
+  }
+  abd.style.display = "none";
+  blur.style.display = "none";
+  students.style.display = "none";
+  main.style.display = "block";
+  function toggleAbd(){
+    showAbd = !showAbd;
+    if(showAbd){
+        abd.style.display = "block";
+        blur.style.display = "block";
+    }
+    else{
+        abd.style.display = "none";
+        blur.style.display = "none";
+    }
+  }
+  function seeStudents(){
+    students.style.display = "block";
+    main.style.display = "none";
+    addStudents();
+  }
+  function hideStudents(){
+    main.style.display = "block";
+    students.style.display = "none";
+  }
+  </script>
+</body>
+</html>
