@@ -47,7 +47,7 @@ body {
 .headerButton:first-child { border-left: 1px solid; }
 
 .logout {
-  background-color: #ff6352;
+  background-color: tomato;
   color: #fff;
   border: none;
   padding: 10px 20px;

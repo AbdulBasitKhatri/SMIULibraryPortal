@@ -37,38 +37,87 @@
   <div id="students" style="width: 100%; height: 50rem;">
     
   </div>
+  <div id="blur" onclick="toggleAbd()" style="z-index: 3;filter: blur(45px); backdrop-filter: blur(40px); width: 100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(255,255,255,0.5);"></div>
+  <div id="addBookDialogue" style="z-index: 4;position: fixed; width: 330px; max-height: 370px; background-color: rgba(0, 0, 0, 0.7);border-radius: 8px; left: calc(50% - 165px); top: 10%;">
+      <h2 style="text-align: center; color: white;">Enter book details</h2>
+      <form action="/addBook" method="post" enctype='multipart/form-data'>
+          <div class="input-box">
+              <label for="title">Title</label>
+              <input type="text" placeholder="Enter Book's Title" name="title" id="title" required>
+          </div>
+          <div class="input-box">
+              <label for="author">Author</label>
+              <input type="text" placeholder="Enter Author's Name" name="author" id="author" required>
+          </div>
+          <div class="input-box">
+              <label for="isbn">ISBN</label>
+              <input type="text" placeholder="Enter ISBN" name="isbn" id="isbn" required>
+          </div>
+          <div class="input-box">
+              <label for="picture">Picture</label>
+              <input type="file" id="picture" name="picture" accept="image/*">
+          </div>
+          <div class="input-box">
+              <input type="submit" id="add" value="Add" style="width: 100%; background-color: #3cb371; color: white;">
+          </div>
+      </form>
+  </div>
   <div id="main">
     <div class="search-bar">
         <input type="text" id="searchInput" placeholder="Search for books..." onkeyup="searchBooks()">
     </div>
     <div class="book-container" id="bookContainer"></div>
-    <div id="blur" onclick="toggleAbd()" style="filter: blur(45px); backdrop-filter: blur(40px); width: 100%; height: 100%; position: fixed; top: 0px; left: 0px; background-color: rgba(255,255,255,0.5);"></div>
-    <div id="addBookDialogue" style="position: fixed; width: 300px; height: 320px; background-color: rgba(0, 0, 0, 0.7);border-radius: 8px; left: calc(50% - 150px); top: 10%;">
-        <h2 style="text-align: center; color: white;">Enter book details</h2>
-        <form action="/addBook" method="post" enctype='multipart/form-data'>
-            <div class="input-box">
-                <label for="title">Title</label>
-                <input type="text" placeholder="Enter Book's Title" name="title" id="title" required>
-            </div>
-            <div class="input-box">
-                <label for="author">Author</label>
-                <input type="text" placeholder="Enter Author's Name" name="author" id="author" required>
-            </div>
-            <div class="input-box">
-                <label for="isbn">ISBN</label>
-                <input type="text" placeholder="Enter ISBN" name="isbn" id="isbn" required>
-            </div>
-            <div class="input-box">
-                <label for="picture">Picture</label>
-                <input type="file" id="picture" name="picture" accept="image/*">
-            </div>
-            <div class="input-box">
-                <input type="submit" id="add" value="Add" style="width: 100%;">
-            </div>
-        </form>
-    </div>
     </div>
   <script>
+    const orgAbd = `<h2 style="text-align: center; color: white;">Enter book details</h2>
+      <form action="/addBook" method="post" enctype='multipart/form-data'>
+          <div class="input-box">
+              <label for="title">Title</label>
+              <input type="text" placeholder="Enter Book's Title" name="title" id="title" required>
+          </div>
+          <div class="input-box">
+              <label for="author">Author</label>
+              <input type="text" placeholder="Enter Author's Name" name="author" id="author" required>
+          </div>
+          <div class="input-box">
+              <label for="isbn">ISBN</label>
+              <input type="text" placeholder="Enter ISBN" name="isbn" id="isbn" required>
+          </div>
+          <div class="input-box">
+              <label for="picture">Picture</label>
+              <input type="file" id="picture" name="picture" accept="image/*">
+          </div>
+          <div class="input-box">
+              <input type="submit" id="add" value="Add" style="width: 100%; background-color: #3cb371; color: white;">
+          </div>
+      </form>`;
+    const studentAbd = `<h2 style="text-align: center; color: white;">Enter student details</h2>
+      <form action="/student" method="post">
+          <input type="text" hidden name="id" id="id" required>        
+          <div class="input-box">
+              <label for="fullname">Full Name</label>
+              <input type="text" placeholder="Enter Student's Full Name" name="name" id="fullname" required>
+          </div>
+          <div class="input-box">
+              <label for="sid">Student-ID</label>
+              <input type="text" placeholder="Enter Student-ID" name="sid" id="sid" required>
+          </div>
+          <div class="input-box">
+              <label for="phone">Phone</label>
+              <input type="text" placeholder="Enter Student's Phone" name="phone" id="phone" required>
+          </div>
+          <div class="input-box">
+              <label for="email">Email</label>
+              <input type="email" placeholder="Enter Student's Email" id="email" name="email" required>
+          </div>
+          <div class="input-box">
+              <label for="password">Password</label>
+              <input type="password" placeholder="Leave for no change" id="password" name="password">
+          </div>
+          <div class="input-box">
+              <input type="submit" id="update" value="Update" style="width: 100%; background-color: #3cb371; color: white;">
+          </div>
+      </form>`;
     const bookContainer = document.getElementById("bookContainer");
     const abd = document.getElementById("addBookDialogue");
     const blur = document.getElementById("blur");
@@ -81,7 +130,7 @@
       .then(res => res.json())
       .then(data => {
         const students = document.getElementById('students');
-        students.innerHTML = ''; // clear old content
+        students.innerHTML = '';
 
         data.forEach(student => {
           const div = document.createElement('div');
@@ -92,9 +141,11 @@
             <p class="student-detail"><b>Name:</b>&nbsp;&nbsp; ${student.name}</p>
             <p class="student-detail"><b>Student-ID:</b>&nbsp;&nbsp; ${student.sid}</p>
             <p class="student-detail"><b>Phone:</b>&nbsp;&nbsp; ${student.phone}</p>
-            <p class="student-detail"><b>Email:</b>&nbsp;&nbsp; ${student.email}</p>
-            <button class="solid-btn" style="float: right; width: 40%;" onclick="removeStudent('${student.sid}')">Remove</button>
-            <br><br>
+            <p class="student-detail"><b>Email:</b>&nbsp;&nbsp; ${student.email}</p><br><br>
+            <div style="display: flex; justify-content: space-between;">
+            <button class="solid-btn" style="float: right; width: 40%; background: #3cb371;" onclick="updateStudent({id:'${student.id}',fullname:'${student.name}',sid:'${student.sid}',phone:'${student.phone}',email:'${student.email}'})">Update</button>
+            <button class="solid-btn" style="float: right; width: 40%; background: tomato;" onclick="removeStudent('${student.sid}')">Remove</button>
+            </div>
           `;
 
           students.appendChild(div);
@@ -125,7 +176,16 @@
             alert('Could not delete student');
         });
     }
-
+    function updateStudent(student){
+      toggleAbd();
+      abd.innerHTML = studentAbd;
+      document.getElementById("id").value = student.id;
+      console.log(student)
+      document.getElementById("fullname").value = student.fullname;
+      document.getElementById("sid").value = student.sid;
+      document.getElementById("phone").value = student.phone;
+      document.getElementById("email").value = student.email;
+    }
     function renderBooks(filteredBooks) {
       bookContainer.innerHTML = "";
       filteredBooks.forEach(book => {
@@ -136,7 +196,8 @@
             <p><strong>Author:</strong> ${book.author}</p>
             <p><strong>ISBN:</strong> ${book.isbn}</p>
             <div class="btn-group">
-              <button class="solid-btn" onclick="removeBook('${book.isbn}')">Remove</button>
+              <button class="solid-btn" onclick="removeBook('${book.id}')" style="background:tomato">Remove</button>
+              <button class="solid-btn" style="background:#3cb371" onclick="updateBook({id:'${book.id}',title:'${book.title}',author:'${book.author}',isbn:'${book.isbn}'})">Update</button>
             </div>
           </div>
         `;
@@ -174,10 +235,10 @@ let books = [];
     document.getElementById('bookContainer').innerText = 'Failed to load books.';
     console.error(err);
   });
-  function removeBook(isbn) {
-    if (!confirm(`Are you sure you want to delete the book with ISBN: ${isbn}?`)) return;
+  function removeBook(id) {
+    if (!confirm(`Are you sure you want to delete the book ?`)) return;
 
-    fetch(`/books/${isbn}`, {
+    fetch(`/books/${id}`, {
       method: 'DELETE',
       credentials: 'include' // ensures admin cookie is sent
     })
@@ -199,7 +260,21 @@ let books = [];
   blur.style.display = "none";
   students.style.display = "none";
   main.style.display = "block";
+  function updateBook(book){
+    toggleAbd();
+    document.querySelector('#addBookDialogue form').action = `/book/${book.id}`;
+    document.getElementById("add").value = "Update";
+    document.getElementById("title").value = book.title;
+    document.getElementById("author").value = book.author;
+    document.getElementById("isbn").value = book.isbn;
+  }
   function toggleAbd(){
+    abd.innerHTML = orgAbd;
+    document.querySelector('#addBookDialogue form').action = '/addBook';
+    document.getElementById("add").value = "Add";
+    document.getElementById("title").value = "";
+    document.getElementById("author").value = "";
+    document.getElementById("isbn").value = "";
     showAbd = !showAbd;
     if(showAbd){
         abd.style.display = "block";
@@ -218,6 +293,10 @@ let books = [];
   function hideStudents(){
     main.style.display = "block";
     students.style.display = "none";
+  }
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('s') === 'true') {
+    alert('Updated Successfully!');
   }
   </script>
 </body>

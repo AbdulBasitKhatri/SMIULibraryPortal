@@ -200,10 +200,36 @@ app.get('/books', requireAuth, (req, res) => {
   });
 });
 
-app.delete('/books/:isbn', requireAdmin, (req, res) => {
-    const isbn = req.params.isbn;
+app.post('/book/:id', requireAdmin, upload.single('picture'), (req, res) => {
+  const id = req.params.id;
+  const { title, author, isbn } = req.body;
+  const image = req.file ? '/img/' + req.file.filename : null;
 
-    db.run('DELETE FROM books WHERE isbn = ?', [isbn], function(err) {
+  if (image) {
+    db.run(
+      `UPDATE books SET title = ?, author = ?, isbn = ?, image = ? WHERE id = ?`,
+      [title, author, isbn, image, id],
+      function (err) {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.redirect('/admin');
+      }
+    );
+  } else {
+    db.run(
+      `UPDATE books SET title = ?, author = ?, isbn = ? WHERE id = ?`,
+      [title, author, isbn, id],
+      function (err) {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.redirect('/admin');
+      }
+    );
+  }
+});
+
+app.delete('/books/:id', requireAdmin, (req, res) => {
+    const id = req.params.id;
+
+    db.run('DELETE FROM books WHERE id = ?', [id], function(err) {
         if (err) return res.status(500).json({ error: 'Database error' });
         if (this.changes === 0) return res.status(404).json({ error: 'Book not found!' });
 
@@ -233,10 +259,40 @@ app.post('/addBook', requireAdmin, upload.single('picture'), (req, res) => {
 });
 
 app.get('/students', requireAdmin, (req, res) => {
-  db.all('SELECT name, sid, phone, email FROM users', (err, rows) => {
+  db.all('SELECT * FROM users', (err, rows) => {
     if (err) return res.status(500).json({ error: 'Database error' });
     res.json(rows);
   });
+});
+
+app.post('/student', requireAdmin, async (req, res) => {
+  const { id, name, sid, phone, email, password } = req.body;
+
+  if (id) {
+    if (password.trim() !== "") {
+      const hashed = await bcrypt.hash(password, 10);
+      db.run(
+        `UPDATE users SET name = ?, sid = ?, phone = ?, email = ?, password = ? WHERE id = ?`,
+        [name, sid, phone, email, hashed, id],
+        function (err) {
+          if (err) return res.status(500).send('Error updating student');
+          res.redirect('/admin?s=true');
+        }
+      );
+    } else {
+      db.run(
+        `UPDATE users SET name = ?, sid = ?, phone = ?, email = ? WHERE id = ?`,
+        [name, sid, phone, email, id],
+        function (err) {
+          if (err) return res.status(500).send('Error updating student');
+          res.redirect('/admin?s=true');
+        }
+      );
+    }
+  }
+  else{
+    res.redirect('/admin?s=false');
+  }
 });
 
 app.delete('/students/:sid', requireAdmin, (req, res) => {
